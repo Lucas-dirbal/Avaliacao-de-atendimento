@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Avalie o atendimento - Leandro</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-attendant="Leandro">
+    <main class="shell">
+      <div class="logomark">
+        <span class="logomark-dot"></span>
+        Avaliacao de Atendimento
+      </div>
+
+      <header class="page-header">
+        <div>
+          <p class="kicker">Avaliacao final do atendimento</p>
+          <h1>Como foi a sua experiencia<br />com Leandro?</h1>
+          <p class="lead">
+            Esta tela foi preparada para o cliente avaliar o atendimento no fim da
+            conversa. Escolha de 0 a 5 estrelas o quanto a experiencia foi satisfatoria.
+          </p>
+        </div>
+      </header>
+
+      <div class="layout-single">
+        <section class="panel">
+          <h2>Sua avaliacao</h2>
+          <p class="panel-intro">
+            Marque de 0 a 5 estrelas para mostrar o quanto o atendimento foi satisfatorio.
+          </p>
+
+          <form class="form-stack" id="feedback-form">
+            <div class="field">
+              <span class="field-title">De 0 a 5 estrelas, o quao satisfatorio foi o atendimento?</span>
+              <p class="field-help">
+                Use 0 estrelas se a experiencia nao foi satisfatoria e 5 estrelas se ficou
+                totalmente satisfeito.
+              </p>
+              <div class="button-group button-group-stars" data-choice-group="rating">
+                <button type="button" data-value="1" aria-label="1 estrela"><span aria-hidden="true">&#9733;</span></button>
+                <button type="button" data-value="2" aria-label="2 estrelas"><span aria-hidden="true">&#9733;</span></button>
+                <button type="button" data-value="3" aria-label="3 estrelas"><span aria-hidden="true">&#9733;</span></button>
+                <button type="button" data-value="4" aria-label="4 estrelas"><span aria-hidden="true">&#9733;</span></button>
+                <button type="button" data-value="5" aria-label="5 estrelas"><span aria-hidden="true">&#9733;</span></button>
+              </div>
+              <div class="rating-meta">
+                <button class="rating-clear" type="button" data-clear-rating aria-pressed="false">0 estrelas</button>
+                <span class="rating-value" id="rating-value">Nenhuma nota selecionada.</span>
+              </div>
+              <input type="hidden" name="rating" />
+            </div>
+
+            <button class="button" type="submit">Enviar avaliacao</button>
+            <p class="status" id="form-status" aria-live="polite"></p>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
