@@ -3,6 +3,7 @@ const form = document.querySelector("#feedback-form");
 const statusNode = document.querySelector("#form-status");
 const ratingValueNode = document.querySelector("#rating-value");
 const clearRatingButton = document.querySelector("[data-clear-rating]");
+const feedbackToken = new URLSearchParams(window.location.search).get("token") || "";
 
 const request = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -125,6 +126,10 @@ const resetGroups = () => {
 };
 
 const validatePayload = (payload) => {
+  if (!payload.token) {
+    return "Link de avaliacao invalido. Solicite um novo link ao atendente.";
+  }
+
   if (!Number.isInteger(payload.rating) || payload.rating < 0 || payload.rating > 5) {
     return "Selecione uma nota de 0 a 5 estrelas.";
   }
@@ -138,6 +143,7 @@ form.addEventListener("submit", async (event) => {
   const formData = new FormData(form);
   const payload = {
     attendant,
+    token: feedbackToken,
     rating: getNumericValue(formData.get("rating")),
   };
 
@@ -156,6 +162,9 @@ form.addEventListener("submit", async (event) => {
 
     form.reset();
     resetGroups();
+    form.querySelectorAll("button, input").forEach((element) => {
+      element.disabled = true;
+    });
     setStatus("Obrigado. Sua avaliacao foi enviada com sucesso.", "success");
   } catch (error) {
     setStatus(error.message, "error");
@@ -165,3 +174,10 @@ form.addEventListener("submit", async (event) => {
 setupButtonGroups();
 setupClearRating();
 resetGroups();
+
+if (!feedbackToken) {
+  form.querySelectorAll("button, input").forEach((element) => {
+    element.disabled = true;
+  });
+  setStatus("Link de avaliacao invalido. Solicite um novo link ao atendente.", "error");
+}

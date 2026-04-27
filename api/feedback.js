@@ -1,9 +1,12 @@
 const {
   getFeedbackByAttendant,
+  getFeedbackLink,
   normalizeFeedback,
   readDatabase,
+  saveFeedback,
+  saveUsedFeedbackLink,
   validateFeedback,
-  writeDatabase,
+  validateFeedbackLink,
 } = require("./_store");
 
 const sendJson = (response, statusCode, payload) => {
@@ -45,6 +48,27 @@ const parseBody = async (request) => {
   return {};
 };
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const readDatabaseWithFreshLink = async (token) => {
+  let link = await getFeedbackLink(token);
+
+  if (!token || link) {
+    return link;
+  }
+
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    await wait(500);
+    link = await getFeedbackLink(token);
+
+    if (link) {
+      return link;
+    }
+  }
+
+  return link;
+};
+
 module.exports = async (request, response) => {
   try {
     if (request.method === "GET") {
@@ -73,9 +97,17 @@ module.exports = async (request, response) => {
         return;
       }
 
-      const database = await readDatabase();
-      database.feedback.push(normalizeFeedback(payload));
-      await writeDatabase(database);
+      const link = await readDatabaseWithFreshLink(String(payload.token || "").trim());
+      const linkValidation = validateFeedbackLink(link, payload);
+
+      if (linkValidation.error) {
+        sendJson(response, 409, { error: linkValidation.error });
+        return;
+      }
+
+      const feedback = normalizeFeedback(payload, linkValidation.link);
+      await saveFeedback(feedback);
+      await saveUsedFeedbackLink(linkValidation.link, feedback.id);
 
       sendJson(response, 201, { success: true });
       return;
