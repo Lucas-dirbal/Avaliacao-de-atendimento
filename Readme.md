@@ -7,6 +7,10 @@ Projeto simples com:
 - um `db.json` compartilhado como base de dados
 - um dashboard geral lendo o mesmo JSON
 
+## Repositorio Git
+
+`https://github.com/Lucas-dirbal/Avaliacao-de-atendimento.git`
+
 ## Como rodar
 
 1. Tenha o Node.js instalado.
