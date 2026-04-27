@@ -1,3 +1,17 @@
 {
-  "cleanUrls": false
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/feedback",
+      "destination": "/api/feedback.js"
+    },
+    {
+      "source": "/api/dashboard",
+      "destination": "/api/dashboard.js"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ]
 }
