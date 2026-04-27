@@ -1,51 +1,127 @@
 const fs = require("fs/promises");
 const path = require("path");
 const { randomUUID } = require("crypto");
+const { get: getBlob, put: putBlob } = require("@vercel/blob");
 
 const ATTENDANTS = ["Lucas", "Nicolas", "Leandro", "Pedro", "Willian"];
-const SEED_DB_PATH = path.join(__dirname, "..", "db.json");
-const RUNTIME_DB_PATH = path.join("/tmp", "avaliacao-feedback-db.json");
+const DB_PATH = path.join(__dirname, "..", "db.json");
+const BLOB_DB_PATH = "feedback/database.json";
 
 const emptyDatabase = () => ({ feedback: [] });
 
-const getDatabasePath = () =>
-  process.env.VERCEL ? RUNTIME_DB_PATH : path.join(__dirname, "..", "db.json");
+const hasBlobStorage = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+
+const isVercelRuntime = () => Boolean(process.env.VERCEL || process.env.VERCEL_URL);
+
+const ensureWritableStorage = () => {
+  if (hasBlobStorage() || !isVercelRuntime()) {
+    return;
+  }
+
+  const error = new Error(
+    "A publicacao na Vercel precisa da variavel BLOB_READ_WRITE_TOKEN para salvar avaliacoes."
+  );
+  error.statusCode = 500;
+  throw error;
+};
 
 const ensureDatabase = async () => {
-  const databasePath = getDatabasePath();
-
   try {
-    await fs.access(databasePath);
+    await fs.access(DB_PATH);
   } catch (error) {
-    await fs.mkdir(path.dirname(databasePath), { recursive: true });
-
-    try {
-      await fs.copyFile(SEED_DB_PATH, databasePath);
-    } catch (copyError) {
-      await fs.writeFile(databasePath, JSON.stringify(emptyDatabase(), null, 2));
-    }
+    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
+    await fs.writeFile(DB_PATH, JSON.stringify(emptyDatabase(), null, 2));
   }
 };
 
-const readDatabase = async () => {
-  await ensureDatabase();
+const normalizeDatabase = (data) => {
+  if (!data || !Array.isArray(data.feedback)) {
+    return emptyDatabase();
+  }
+
+  return {
+    feedback: data.feedback.filter((item) => {
+      return item && ATTENDANTS.includes(item.attendant) && Number.isInteger(item.rating);
+    }),
+  };
+};
+
+const streamToText = async (stream) => {
+  if (!stream) {
+    return "";
+  }
+
+  if (typeof stream.getReader === "function") {
+    return new Response(stream).text();
+  }
+
+  const chunks = [];
+
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+
+  return Buffer.concat(chunks).toString("utf8");
+};
+
+const readBlobDatabase = async () => {
+  ensureWritableStorage();
+
+  const result = await getBlob(BLOB_DB_PATH, { access: "private" });
+
+  if (!result || result.statusCode !== 200) {
+    return emptyDatabase();
+  }
 
   try {
-    const raw = await fs.readFile(getDatabasePath(), "utf8");
-    const data = JSON.parse(raw);
-
-    if (!Array.isArray(data.feedback)) {
-      return emptyDatabase();
-    }
-
-    return data;
+    return normalizeDatabase(JSON.parse(await streamToText(result.stream)));
   } catch (error) {
     return emptyDatabase();
   }
 };
 
+const writeBlobDatabase = async (database) => {
+  ensureWritableStorage();
+
+  await putBlob(BLOB_DB_PATH, JSON.stringify(normalizeDatabase(database), null, 2), {
+    access: "private",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json; charset=utf-8",
+  });
+};
+
+const readLocalDatabase = async () => {
+  await ensureDatabase();
+
+  try {
+    const raw = await fs.readFile(DB_PATH, "utf8");
+    return normalizeDatabase(JSON.parse(raw));
+  } catch (error) {
+    return emptyDatabase();
+  }
+};
+
+const writeLocalDatabase = async (database) => {
+  await fs.writeFile(DB_PATH, JSON.stringify(normalizeDatabase(database), null, 2));
+};
+
+const readDatabase = async () => {
+  if (hasBlobStorage()) {
+    return readBlobDatabase();
+  }
+
+  return readLocalDatabase();
+};
+
 const writeDatabase = async (database) => {
-  await fs.writeFile(getDatabasePath(), JSON.stringify(database, null, 2));
+  if (hasBlobStorage()) {
+    await writeBlobDatabase(database);
+    return;
+  }
+
+  ensureWritableStorage();
+  await writeLocalDatabase(database);
 };
 
 const getFeedbackByAttendant = (feedback, attendant) => {

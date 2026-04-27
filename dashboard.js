@@ -11,7 +11,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 });
 
 const request = async (url) => {
-  const response = await fetch(url);
+  const response = await fetch(url, { cache: "no-store" });
   const data = await response.json();
 
   if (!response.ok) {

@@ -6,6 +6,7 @@ const clearRatingButton = document.querySelector("[data-clear-rating]");
 
 const request = async (url, options = {}) => {
   const response = await fetch(url, {
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),

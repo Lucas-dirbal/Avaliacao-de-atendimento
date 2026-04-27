@@ -8,12 +8,14 @@ const {
 
 const sendJson = (response, statusCode, payload) => {
   if (typeof response.status === "function") {
+    response.setHeader("Cache-Control", "no-store, max-age=0");
     response.status(statusCode).json(payload);
     return;
   }
 
   response.writeHead(statusCode, {
     "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store, max-age=0",
   });
   response.end(JSON.stringify(payload));
 };
