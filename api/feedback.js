@@ -6,32 +6,71 @@ const {
   writeDatabase,
 } = require("./_store");
 
-module.exports = async (request, response) => {
-  if (request.method === "GET") {
-    const database = await readDatabase();
-    const attendant = request.query.attendant;
-    const feedback = getFeedbackByAttendant(database.feedback, attendant);
-
-    response.status(200).json({ feedback });
+const sendJson = (response, statusCode, payload) => {
+  if (typeof response.status === "function") {
+    response.status(statusCode).json(payload);
     return;
   }
 
-  if (request.method === "POST") {
-    const payload = request.body || {};
-    const validationError = validateFeedback(payload);
+  response.writeHead(statusCode, {
+    "Content-Type": "application/json; charset=utf-8",
+  });
+  response.end(JSON.stringify(payload));
+};
 
-    if (validationError) {
-      response.status(400).json({ error: validationError });
+const parseBody = async (request) => {
+  if (request.body && typeof request.body === "object") {
+    return request.body;
+  }
+
+  if (typeof request.body === "string") {
+    return JSON.parse(request.body);
+  }
+
+  const chunks = [];
+
+  for await (const chunk of request) {
+    chunks.push(chunk);
+  }
+
+  if (!chunks.length) {
+    return {};
+  }
+
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+};
+
+module.exports = async (request, response) => {
+  try {
+    if (request.method === "GET") {
+      const database = await readDatabase();
+      const attendant = request.query && request.query.attendant;
+      const feedback = getFeedbackByAttendant(database.feedback, attendant);
+
+      sendJson(response, 200, { feedback });
       return;
     }
 
-    const database = await readDatabase();
-    database.feedback.push(normalizeFeedback(payload));
-    await writeDatabase(database);
+    if (request.method === "POST") {
+      const payload = await parseBody(request);
+      const validationError = validateFeedback(payload);
 
-    response.status(201).json({ success: true });
-    return;
+      if (validationError) {
+        sendJson(response, 400, { error: validationError });
+        return;
+      }
+
+      const database = await readDatabase();
+      database.feedback.push(normalizeFeedback(payload));
+      await writeDatabase(database);
+
+      sendJson(response, 201, { success: true });
+      return;
+    }
+
+    sendJson(response, 405, { error: "Metodo nao permitido." });
+  } catch (error) {
+    console.error("Feedback API error:", error);
+    sendJson(response, 500, { error: "Erro interno do servidor." });
   }
-
-  response.status(405).json({ error: "Metodo nao permitido." });
 };

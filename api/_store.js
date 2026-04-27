@@ -17,6 +17,8 @@ const ensureDatabase = async () => {
   try {
     await fs.access(databasePath);
   } catch (error) {
+    await fs.mkdir(path.dirname(databasePath), { recursive: true });
+
     try {
       await fs.copyFile(SEED_DB_PATH, databasePath);
     } catch (copyError) {
