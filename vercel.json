@@ -1,6 +1,13 @@
 {
   "version": 2,
   "outputDirectory": "public",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/index.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/feedback",
@@ -9,10 +16,6 @@
     {
       "source": "/api/dashboard",
       "destination": "/api/dashboard.js"
-    },
-    {
-      "source": "/",
-      "destination": "/index.html"
     },
     {
       "source": "/dashboard",
