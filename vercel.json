@@ -1,45 +1,51 @@
 {
   "version": 2,
-  "outputDirectory": "public",
-  "redirects": [
+  "builds": [
     {
-      "source": "/",
-      "destination": "/index.html",
-      "permanent": false
+      "src": "api/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/feedback",
-      "destination": "/api/feedback.js"
+      "src": "/api/(.*)",
+      "dest": "/api/$1.js"
     },
     {
-      "source": "/api/dashboard",
-      "destination": "/api/dashboard.js"
+      "src": "/",
+      "dest": "/public/index.html"
     },
     {
-      "source": "/dashboard",
-      "destination": "/dashboard.html"
+      "src": "/dashboard",
+      "dest": "/public/dashboard.html"
     },
     {
-      "source": "/lucas",
-      "destination": "/lucas.html"
+      "src": "/lucas",
+      "dest": "/public/lucas.html"
     },
     {
-      "source": "/nicolas",
-      "destination": "/nicolas.html"
+      "src": "/nicolas",
+      "dest": "/public/nicolas.html"
     },
     {
-      "source": "/leandro",
-      "destination": "/leandro.html"
+      "src": "/leandro",
+      "dest": "/public/leandro.html"
     },
     {
-      "source": "/pedro",
-      "destination": "/pedro.html"
+      "src": "/pedro",
+      "dest": "/public/pedro.html"
     },
     {
-      "source": "/willian",
-      "destination": "/willian.html"
+      "src": "/willian",
+      "dest": "/public/willian.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
     }
   ]
 }

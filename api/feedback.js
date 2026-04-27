@@ -19,25 +19,28 @@ const sendJson = (response, statusCode, payload) => {
 };
 
 const parseBody = async (request) => {
-  if (request.body && typeof request.body === "object") {
-    return request.body;
-  }
-
-  if (typeof request.body === "string") {
-    return JSON.parse(request.body);
-  }
-
   const chunks = [];
 
   for await (const chunk of request) {
     chunks.push(chunk);
   }
 
-  if (!chunks.length) {
-    return {};
+  if (chunks.length) {
+    const rawBody = Buffer.concat(chunks).toString("utf8").replace(/^\uFEFF/, "");
+    return rawBody ? JSON.parse(rawBody) : {};
   }
 
-  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  if (Object.prototype.hasOwnProperty.call(request, "body")) {
+    if (request.body && typeof request.body === "object") {
+      return request.body;
+    }
+
+    if (typeof request.body === "string") {
+      return JSON.parse(request.body.replace(/^\uFEFF/, ""));
+    }
+  }
+
+  return {};
 };
 
 module.exports = async (request, response) => {
@@ -52,7 +55,15 @@ module.exports = async (request, response) => {
     }
 
     if (request.method === "POST") {
-      const payload = await parseBody(request);
+      let payload;
+
+      try {
+        payload = await parseBody(request);
+      } catch (error) {
+        sendJson(response, 400, { error: "JSON invalido." });
+        return;
+      }
+
       const validationError = validateFeedback(payload);
 
       if (validationError) {
