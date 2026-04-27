@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Suporte</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <div class="logomark">
+        <span class="logomark-dot"></span>
+        Avaliação de Atendimento
+      </div>
+
+      <header class="page-header">
+        <div>
+          <p class="kicker">Dashboard interno</p>
+          <h1>Resumo geral<br>das avaliações</h1>
+          <p class="lead">
+            Esta página é para uso interno da equipe e lê o mesmo JSON usado nas
+            páginas de avaliação dos clientes.
+          </p>
+        </div>
+        <a class="button button-secondary" href="index.html">← Voltar ao início</a>
+      </header>
+
+      <nav class="pill-nav">
+        <a class="pill" href="lucas.html">Lucas</a>
+        <a class="pill" href="nicolas.html">Nicolas</a>
+        <a class="pill" href="leandro.html">Leandro</a>
+        <a class="pill" href="pedro.html">Pedro</a>
+        <a class="pill" href="willian.html">Willian</a>
+        <span class="pill is-active">Dashboard</span>
+      </nav>
+
+      <section class="stats-grid stats-grid-dashboard">
+        <article class="stat-card">
+          <span>Total de avaliações</span>
+          <strong id="dashboard-total">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Nota média geral</span>
+          <strong id="dashboard-average">0.0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Última atualização</span>
+          <strong id="dashboard-last-update">—</strong>
+        </article>
+      </section>
+
+      <div class="layout-two">
+        <section class="panel">
+          <div class="toolbar">
+            <button class="button button-secondary" id="refresh-button" type="button">
+              ↻ Atualizar dados
+            </button>
+          </div>
+          <h2>Resumo por atendente</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Atendente</th>
+                  <th>Avaliações</th>
+                  <th>Nota média</th>
+                </tr>
+              </thead>
+              <tbody id="attendant-table-body">
+                <tr>
+                  <td colspan="3">Carregando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Histórico recente</h2>
+          <div class="stack-list" id="dashboard-history">
+            <article class="empty-state">
+              <h3>Carregando</h3>
+              <p>Buscando os dados do JSON compartilhado.</p>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="dashboard.js"></script>
+  </body>
+</html>
