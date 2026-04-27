@@ -12,6 +12,30 @@
     {
       "source": "/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/lucas",
+      "destination": "/lucas.html"
+    },
+    {
+      "source": "/nicolas",
+      "destination": "/nicolas.html"
+    },
+    {
+      "source": "/leandro",
+      "destination": "/leandro.html"
+    },
+    {
+      "source": "/pedro",
+      "destination": "/pedro.html"
+    },
+    {
+      "source": "/willian",
+      "destination": "/willian.html"
     }
   ]
 }
